@@ -141,7 +141,7 @@ Se construyó una climatología mensual con el archivo histórico `precip_spei_m
 
 Con el pronóstico corregido por QC (P_f) y la climatología mensual (P_clim), se estima para cada píxel:
 
-$$\Delta(\%) = 100 \times \frac{P_f - P_{\text{clim}}}{P_{\text{clim}}}$$
+$$\Delta(\%) = 100 \times \frac{P_f - P_{clim}}{P_{clim}}$$
 
 Este campo espacial sintetiza la señal prevista en términos comparables entre regiones.
 
@@ -159,7 +159,7 @@ $$d(t) = |\Delta_{hist}(t) - \Delta_f|$$
 
 4. **Moda del SPEI:** La recomendación agroclimática es la moda de las categorías SPEI entre los K análogos:
 
-$$\text{SPEI}_f = \text{moda}\left\{\text{SPEI}(t_1), \text{SPEI}(t_2), \ldots, \text{SPEI}(t_K)\right\}$$
+$$\text{SPEI}_f = \text{moda} \( \text{SPEI}(t_1),\ \text{SPEI}(t_2),\ \ldots,\ \text{SPEI}(t_K) \)$$
 
 ### Categorías SPEI
 
