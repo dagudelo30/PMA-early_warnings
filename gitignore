@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+env/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Outputs (no versionar mapas generados — son artefactos)
+outputs/
+
+# Archivos temporales NetCDF en memoria
+inmemory.nc
+hist_inmemory.nc
+
+# OS
+.DS_Store
+Thumbs.db
