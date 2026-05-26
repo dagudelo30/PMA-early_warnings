@@ -18,6 +18,7 @@
 - [Metodología detallada](#metodología-detallada)
 - [Control de calidad a los pronósticos IDEAM](#control-de-calidad)
 - [Archivos de salida](#archivos-de-salida)
+- [Publicación automática en AClimate](#publicación-automática-en-aclimate)
 - [Consumo externo de los GeoTIFFs](#consumo-externo-de-los-geotiffs)
 - [Dependencias](#dependencias)
 - [Referencias](#referencias)
@@ -58,8 +59,22 @@ La forma más sencilla. No requiere instalación local.
 
 1. Haz clic en el botón **Open in Colab** al inicio de este README.
 2. En la primera celda del notebook, ejecuta la instalación de dependencias (solo la primera vez).
-3. Ve a la sección **"1. ⚙️ Parámetros"** y ajusta `MONTH`, `YEAR` y demás parámetros según el período que quieras procesar.
-4. Ve al menú **Entorno de ejecución → Ejecutar todo** (`Ctrl+F9`).
+3. Carga el archivo de credenciales `env.txt` (ya compartido):
+
+   - En el menú lateral izquierdo de Colab, haz clic en el icono de **carpeta** (📁 Archivos).
+   ![alt text](image.png)
+
+   - Arrastra el archivo `env.txt` directamente al directorio `/content` de Colab.
+   ![alt text](image-1.png)
+
+   - El archivo debe contener:
+     ```
+     GEO_USER=tu_usuario
+     GEO_PWD=tu_contraseña
+     ```
+   > Si **no deseas publicar en AClimate**, simplemente omite este paso. El notebook generará los GeoTIFFs igualmente.
+4. Ve a la sección **"1. ⚙️ Parámetros"** y ajusta `MONTH`, `YEAR` y demás parámetros según el período que quieras procesar.
+5. Ve al menú **Entorno de ejecución → Ejecutar todo** (`Ctrl+F9`).
 
 > **Nota sobre los datos históricos en Colab:** El notebook descarga automáticamente `precip_spei_mensual.nc` desde este repositorio de GitHub. No necesitas subir ningún archivo manualmente.
 
@@ -90,10 +105,23 @@ Con **pip**:
 pip install -r requirements.txt
 ```
 
-### 3. Ejecutar el notebook
+### 3. Configurar archivo de credenciales
+
+Para publicar los pronósticos automáticamente en AClimate GeoServer:
+
+1. Copia el archivo `env.txt` en la carpeta `notebooks/` (mismo nivel que `resampling_PMA.ipynb`)
+
+2. El archivo `env.txt` debe tener  tus credenciales:
+   ```
+   GEO_USER=tu_usuario
+   GEO_PWD=tu_contraseña
+   ```
+
+> Si no deseas publicar en AClimate, omite este paso. El notebook generará los GeoTIFFs sin problemas.
+
+### 4. Ejecutar el notebook
 
 ```bash
-cd notebooks
 jupyter notebook resampling_PMA.ipynb
 ```
 
@@ -243,6 +271,44 @@ outputs/
 
 ---
 
+## Publicación automática en AClimate
+
+Al finalizar el notebook, los GeoTIFFs se publican automáticamente en el servidor GeoServer de **AClimate**.
+
+### ¿Qué sucede?
+
+1. **Organización:** Los TIFFs se reorganizan por variable (pct_change, spei) y departamento en la carpeta `outputs/geoserver/`.
+2. **Renombrado:** Se renombran con el formato estándar AClimate: `climate_forecast_monthly_st_{departamento}_{variable}_{YYYYMM}.tif`.
+3. **Compresión:** Los archivos se comprimen en un ZIP para su transmisión.
+4. **Publicación:** El ZIP se sube como granule (nueva imagen) en los mosaicos ImageMosaic existentes en GeoServer.
+5. **Resultado:** Los pronósticos quedan disponibles en AClimate para consultas WMS/WCS.
+
+### Manejo de errores comunes
+
+| Error | Causa | Solución |
+|---|---|---|
+| `FileNotFoundError: ❌ Archivo de configuración no encontrado: env.txt` | El archivo `env.txt` no existe en la carpeta del notebook. | Crea `env.txt` basado en `env.txt.example` con tus credenciales. |
+| `ValueError: ❌ Variables de configuración faltantes` | Faltan `GEO_USER` o `GEO_PWD` en el archivo. | Asegúrate de que ambas variables estén presentes en `env.txt`. |
+| `ValueError: ❌ Variables con valores vacíos` | Las variables existen pero están sin completar. | Completa los valores de usuario y contraseña sin dejar campos vacíos. |
+| `RuntimeError: Workspace no encontrado` | El workspace `climate_forecast_monthly` no existe en tu GeoServer. | Contacta al equipo técnico de AClimate. |
+| `Exception: Conexión rechazada` | Credenciales inválidas o servidor no disponible. | Verifica usuario/contraseña y que el servidor esté en línea. |
+
+### Estructura de almacenamiento en GeoServer
+
+```
+climate_forecast_monthly (Workspace)
+├── climate_forecast_monthly_st_amazonas_pct_change (Store/Mosaico)
+├── climate_forecast_monthly_st_amazonas_spei (Store/Mosaico)
+├── climate_forecast_monthly_st_caqueta_pct_change (Store/Mosaico)
+├── climate_forecast_monthly_st_caqueta_spei (Store/Mosaico)
+├── climate_forecast_monthly_st_putumayo_pct_change (Store/Mosaico)
+└── climate_forecast_monthly_st_putumayo_spei (Store/Mosaico)
+```
+
+> **Requisitos:** Necesitas acceso al servidor GeoServer de AClimate. Contacta al equipo técnico para obtener credenciales.
+
+---
+
 ## Consumo externo de los GeoTIFFs
 
 Los archivos `.tif` son estándar **Cloud Optimized GeoTIFF** y pueden consumirse desde múltiples plataformas:
@@ -284,11 +350,12 @@ netCDF4>=1.6
 requests>=2.31
 numpy>=1.26
 matplotlib>=3.8
+gsconfig-py3==1.0.7
 ```
 
 Instalar con:
 ```bash
-pip install xarray rioxarray rasterio geopandas netCDF4 requests numpy matplotlib
+pip install xarray rioxarray rasterio geopandas netCDF4 requests numpy matplotlib gsconfig-py3
 ```
 
 ---
